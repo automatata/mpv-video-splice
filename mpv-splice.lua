@@ -7,7 +7,7 @@
 --
 -- Description:
 --
--- This script provides the hability to create video slices by grabbing two
+-- This script provides the ability to create video slices by grabbing two
 -- timestamps, which generate a slice from timestamp A[i] to timestamp B[i],
 -- e.g.:
 -- 	-> Slice 1: 00:10:34.25 -> 00:15:00.00.
@@ -32,7 +32,7 @@
 --
 --
 -- Usage:
--- 
+--
 -- In the video screen, press Alt + T to grab the first timestamp and then
 -- press Alt + T again to get the second timestamp. This process will generate
 -- a time range, which represents a video slice. Repeat this process to create
@@ -49,7 +49,7 @@
 -- To delete a whole slice, start the slice deletion mode by pressing Alt + D.
 -- When in this mode, it's possible to press Alt + NUM, where NUM is any
 -- number between 0 inclusive and 9 inclusive. For each Alt + NUM pressed, a
--- number will be concatenated to make the final number referring to the slice 
+-- number will be concatenated to make the final number referring to the slice
 -- to be removed, then press Alt + D again to stop the slicing deletion mode
 -- and delete the slice corresponding to the formed number.
 --
@@ -58,7 +58,7 @@
 -- 	-> Alt + 3	# Concatenate number 3
 -- 	-> Alt + D	# Exit slice deletion mode
 --
--- Example 2> Deleting slice number 76
+-- Example 2: Deleting slice number 76
 -- 	-> Alt + D 	# Start slice deletion mode
 -- 	-> Alt + 7	# Concatenate number 7
 -- 	-> Alt + 6	# Concatenate number 6
@@ -77,9 +77,9 @@
 --
 -- Log level:
 --
--- Everytime a timestamp is grabbed, a text will appear on the screen showing
+-- Every time a timestamp is grabbed, a text will appear on the screen showing
 -- the selected time.
--- When Alt + P is pressed, besides showing the slices in the terminal, 
+-- When Alt + P is pressed, besides showing the slices in the terminal,
 -- it will also show on the screen the total number of cuts (or slices)
 -- that were made.
 -- When the actual cutting and joining process begins, a message will be shown
@@ -203,7 +203,7 @@ end
 
 function reset_current_slice()
 	if start_time then
-		notify(2000, "Slice ", #times+1, " reseted.")
+		notify(2000, "Slice ", #times+1, " is reset.")
 
 		start_time = nil
 	end
