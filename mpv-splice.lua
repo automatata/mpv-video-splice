@@ -129,12 +129,8 @@ local concat_name = 'concat.txt'
 
 local ffmpeg = 'ffmpeg -hide_banner -loglevel warning'
 
-local tmp_location = os.getenv('MPV_SPLICE_TEMP')
-	and os.getenv('MPV_SPLICE_TEMP')
-	or default_tmp_location
-local output_location = os.getenv('MPV_SPLICE_OUTPUT')
-	and os.getenv('MPV_SPLICE_OUTPUT')
-	or default_output_location
+local tmp_location = os.getenv('MPV_SPLICE_TEMP') or default_tmp_location
+local output_location = os.getenv('MPV_SPLICE_OUTPUT') or default_output_location
 
 local times = {}
 local start_time = nil
@@ -145,28 +141,19 @@ local exit_time = 0
 --------------------------------------------------------------------------------
 
 function notify(duration, ...)
-	local args = {...}
-	local text = ''
-
-	for i, v in ipairs(args) do
-		text = text .. tostring(v)
-	end
-
+	local text = table.concat({...})
 	msg.info(text)
-	mp.command(string.format('show-text "%s" %d 1',
-		text, duration))
+	mp.osd_message(text, duration)
 end
 
 local function get_time()
 	local time_in_secs = mp.get_property_number('time-pos')
 
+	local secs = time_in_secs % 60
+	local mins = math.floor(time_in_secs / 60) % 60
 	local hours = math.floor(time_in_secs / 3600)
-	local mins = math.floor((time_in_secs - hours * 3600) / 60)
-	local secs = time_in_secs - hours * 3600 - mins * 60
 
-	local fmt_time = string.format('%02d:%02d:%05.2f', hours, mins, secs)
-
-	return fmt_time
+	return string.format('%02d:%02d:%05.2f', hours, mins, secs)
 end
 
 function put_time()
@@ -177,7 +164,6 @@ function put_time()
 		start_time = time
 		message = '[START TIMESTAMP]'
 	else
-		--times[#times+1] = {
 		table.insert(times, {
 			t_start = start_time,
 			t_end = time
@@ -261,10 +247,11 @@ function process_video()
 	local pieces = {}
 
 	-- Better seed randomization
+	-- http://lua-users.org/lists/lua-l/2007-03/msg00553.html
 	math.randomseed(os.time())
 	math.random(); math.random(); math.random()
 
-	if times[#times] then
+	if #times > 0 then
 		local tmp_dir = io.popen(string.format('mktemp -d -p %s',
 			tmp_location)):read('*l')
 		local input_file = mp.get_property('path')
@@ -272,7 +259,7 @@ function process_video()
 
 		local rnd_str = ''
 		for i=1,rnd_size,1 do
-			local rnd_index = math.floor(math.random() * #alphabet + 0.5)
+			local rnd_index = math.random(1, #alphabet)
 			rnd_str = rnd_str .. alphabet:sub(rnd_index, rnd_index)
 		end
 
