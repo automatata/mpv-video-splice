@@ -240,7 +240,15 @@ function prevent_quit(name)
 	end
 end
 
+function ffmpeg_cut(input_file, output_file, t_start, t_end)
+	os.execute(string.format('%s -ss %s -i "%s" -to %s ' ..
+		'-c copy -copyts -avoid_negative_ts make_zero "%s"',
+		ffmpeg, t_start, input_file, t_end, output_file))
+end
+
 function process_video()
+	if #times == 0 then return end
+
 	local alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 	local rnd_size = 10
 
@@ -251,36 +259,37 @@ function process_video()
 	math.randomseed(os.time())
 	math.random(); math.random(); math.random()
 
-	if #times > 0 then
+	local input_file = mp.get_property('path')
+	local ext = string.gmatch(input_file, '.*%.(.*)$')()
+
+	local rnd_str = ''
+	for i=1,rnd_size,1 do
+		local rnd_index = math.random(1, #alphabet)
+		rnd_str = rnd_str .. alphabet:sub(rnd_index, rnd_index)
+	end
+
+	local output_file = string.format('%s/%s_%s_cut.%s',
+		output_location,
+		mp.get_property('filename/no-ext'),
+		rnd_str, ext)
+
+	notify(2000, 'Process started!')
+
+	if #times == 1 then
+		ffmpeg_cut(input_file, output_file, times[1].t_start, times[1].t_end)
+	else
+		-- More than one slices
 		local tmp_dir = io.popen(string.format('mktemp -d -p %s',
-			tmp_location)):read('*l')
-		local input_file = mp.get_property('path')
-		local ext = string.gmatch(input_file, '.*%.(.*)$')()
-
-		local rnd_str = ''
-		for i=1,rnd_size,1 do
-			local rnd_index = math.random(1, #alphabet)
-			rnd_str = rnd_str .. alphabet:sub(rnd_index, rnd_index)
-		end
-
-		local output_file = string.format('%s/%s_%s_cut.%s',
-			output_location,
-			mp.get_property('filename/no-ext'),
-			rnd_str, ext)
-
+		tmp_location)):read('*l')
 		local cat_file_name = string.format('%s/%s', tmp_dir, 'concat.txt')
 		local cat_file_ptr = io.open(cat_file_name, 'w')
 
-		notify(2000, 'Process started!')
 
 		for i, obj in ipairs(times) do
 			local path = string.format('%s/%s_%d.%s',
 				tmp_dir, rnd_str, i, ext)
 			cat_file_ptr:write(string.format("file '%s'\n", path))
-			os.execute(string.format('%s -ss %s -i "%s" -to %s ' ..
-				'-c copy -copyts -avoid_negative_ts make_zero "%s"',
-				ffmpeg, obj.t_start, input_file, obj.t_end,
-				path))
+			ffmpeg_cut(input_file, path, obj.t_start, obj.t_end)
 		end
 
 		cat_file_ptr:close()
@@ -291,11 +300,12 @@ function process_video()
 		os.execute(cmd)
 
 		notify(10000, 'File saved as: ', output_file)
-		msg.info('Process ended!')
 
 		os.execute(string.format('rm -rf %s', tmp_dir))
 		msg.info('Temporary directory removed!')
 	end
+
+	msg.info('Process ended!')
 end
 
 mp.set_property('keep-open', 'yes') -- Prevent mpv from exiting when the video ends
