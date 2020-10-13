@@ -125,8 +125,6 @@ local default_output_location = mp.get_property('working-directory')
 
 --------------------------------------------------------------------------------
 
-local concat_name = 'concat.txt'
-
 local ffmpeg = 'ffmpeg -hide_banner -loglevel warning'
 
 local tmp_location = os.getenv('MPV_SPLICE_TEMP') or default_tmp_location
@@ -251,8 +249,6 @@ function process_video()
 
 	local alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 	local rnd_size = 10
-
-	local pieces = {}
 
 	-- Better seed randomization
 	-- http://lua-users.org/lists/lua-l/2007-03/msg00553.html
